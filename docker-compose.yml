@@ -4,7 +4,7 @@ services:
     container_name: worldcup-mariadb
     env_file: ./mariadb/.env
     ports:
-      - "3306:3306"
+    - "3307:3306"
   adminer:
     image: adminer
     ports:
