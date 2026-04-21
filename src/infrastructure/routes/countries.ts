@@ -4,6 +4,7 @@ import { GetCountryByCodeHandler } from "../handlers/countries/GetCountryByCodeH
 import { GetCountryCitiesHandler } from "../handlers/countries/GetCountryCitiesHandler";
 
 const countriesRouter = new Hono();
+
 countriesRouter.get("/", (c) => new GetCountriesHandler().handle(c));
 countriesRouter.get("/:code/cities", (c) => new GetCountryCitiesHandler().handle(c));
 countriesRouter.get("/:code", (c) => new GetCountryByCodeHandler().handle(c));
