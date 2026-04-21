@@ -22,8 +22,10 @@ export class Ticket {
   @Column()
   email: string;
 
-  constructor(match: Match, seat: string, firstname: string, lastname: string, email: string) {
-    if (!seat) throw new Error("Seat cannot be empty");
+  constructor(match: Relation<Match>, seat: string, firstname: string, lastname: string, email: string) {
+    // Si seat est non-défini (appel par TypeORM), on ne fait pas la validation
+    if (seat !== undefined && !seat) throw new Error("Seat cannot be empty");
+    
     this.match = match;
     this.seat = seat;
     this.firstname = firstname;
