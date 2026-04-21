@@ -6,10 +6,10 @@ export class City {
   @PrimaryColumn()
   name: string;
 
-@ManyToOne(() => Country, (country) => country.cities, { nullable: false })
+  @ManyToOne(() => Country, (country) => country.cities, { nullable: false })
   country: Relation<Country>;
 
-  constructor(name: string, country: Country) {
+  constructor(name: string, country: Relation<Country>) {
     this.name = name;
     this.country = country;
   }
