@@ -1,0 +1,11 @@
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: worldcup-mariadb
+    env_file: ./mariadb/.env
+    ports:
+      - "3306:3306"
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
