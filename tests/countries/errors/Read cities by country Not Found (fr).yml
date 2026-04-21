@@ -16,7 +16,7 @@ runtime:
       operator: isFalsy
     - expression: res.body.error
       operator: eq
-      value: 'Country "fr" does not exist'
+      value: Country "fr" does not exist
     - expression: res.status
       operator: eq
       value: "404"

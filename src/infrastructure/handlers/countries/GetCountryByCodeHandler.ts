@@ -12,7 +12,7 @@ export class GetCountryByCodeHandler {
     if (!country) {
       return c.json({
         success: false,
-        message: "Country not found"
+        error: `Country "${code}" does not exist`
       }, 404);
     }
 

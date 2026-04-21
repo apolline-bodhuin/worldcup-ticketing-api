@@ -37,18 +37,19 @@ export class CreateTicketHandler {
       email: customer.email,
     });
 
-    await ticketRepo.save(newTicket);
+    const savedTicket = await ticketRepo.save(newTicket);
 
     return c.json({
       success: true,
       message: "Ticket created",
       data: {
-        matchId: newTicket.match.id,
-        seat: newTicket.seat,
-        holder: {
-          firstName: newTicket.firstname,
-          lastName: newTicket.lastname,
-          email: newTicket.email
+        id: savedTicket.id,
+        seat: savedTicket.seat,
+        customer: {
+          email: savedTicket.email
+        },
+        match: {
+          id: savedTicket.match.id
         }
       }
     }, 201);
