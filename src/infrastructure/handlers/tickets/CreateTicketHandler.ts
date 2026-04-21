@@ -11,7 +11,7 @@ export class CreateTicketHandler {
 
     const result = CreateTicketSchema.safeParse(body);
     if (!result.success) {
-      throw new HTTPException(400, { message: "Invalid data format" });
+      throw new HTTPException(400, { message: "Can't create ticket (wrong or missing values)" });
     }
 
     const { matchId, seat, customer } = result.data;
@@ -21,12 +21,12 @@ export class CreateTicketHandler {
 
     const match = await matchRepo.findOneBy({ id: matchId });
     if (!match) {
-      throw new HTTPException(404, { message: "Match not found" });
+      throw new HTTPException(404, { message: `Match ${matchId} does not exist` });
     }
 
     const existingTicket = await ticketRepo.findOneBy({ match: { id: matchId }, seat });
     if (existingTicket) {
-      throw new HTTPException(409, { message: "Seat already booked" });
+      throw new HTTPException(409, { message: `Seat '${seat}' is already taken for match ${matchId}` });
     }
 
     const newTicket = ticketRepo.create({

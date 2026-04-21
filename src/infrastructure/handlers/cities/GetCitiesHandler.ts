@@ -14,6 +14,13 @@ export class GetCitiesHandler {
     }
 
     const cities = await query.getMany();
-    return c.json(cities, 200);
+    
+    const message = nameFilter ? `Cities filtered by name: ${nameFilter}` : "All cities";
+
+    return c.json({
+      success: true,
+      message: message,
+      data: cities
+    }, 200);
   }
 }

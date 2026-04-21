@@ -24,10 +24,17 @@ export class GetTeamsHandler {
         throw new HTTPException(400, { message: "Paramètre sort invalide" });
       }
     } else {
-      query = query.orderBy("team.name", "ASC"); // Défaut
+      query = query.orderBy("team.name", "ASC");
     }
 
     const teams = await query.getMany();
-    return c.json(teams, 200);
+
+    const message = nameFilter ? `Teams filtered by name: ${nameFilter}` : "All teams";
+
+    return c.json({
+      success: true,
+      message: message,
+      data: teams
+    }, 200);
   }
 }

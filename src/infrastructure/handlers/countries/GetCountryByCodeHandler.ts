@@ -5,7 +5,6 @@ import { Country } from "@domain/entities/Country";
 export class GetCountryByCodeHandler {
   async handle(c: Context) {
     const code = c.req.param("code");
-
     const countryRepository = AppDataSource.getRepository(Country);
 
     const country = await countryRepository.findOneBy({ code: code });
@@ -16,7 +15,7 @@ export class GetCountryByCodeHandler {
         message: "Country not found"
       }, 404);
     }
-    
+
     return c.json({
       success: true,
       message: `Country ${country.name}`,

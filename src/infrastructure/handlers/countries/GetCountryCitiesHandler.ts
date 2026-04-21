@@ -13,8 +13,15 @@ export class GetCountryCitiesHandler {
     if (!country) throw new HTTPException(404, { message: "Pays introuvable" });
 
     const cityRepo = AppDataSource.getRepository(City);
-    const cities = await cityRepo.find({ where: { country: { code } } });
+    const cities = await cityRepo.find({ 
+      where: { country: { code } },
+      relations: ["country"] 
+    });
 
-    return c.json(cities, 200);
+    return c.json({
+      success: true,
+      message: `Cities in ${country.name}`,
+      data: cities
+    }, 200);
   }
 }

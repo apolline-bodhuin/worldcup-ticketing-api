@@ -14,9 +14,13 @@ export class GetCityByNameHandler {
       .getOne(); 
 
     if (!city) {
-      throw new HTTPException(404, { message: "Ville introuvable" }); 
+      throw new HTTPException(404, { message: `City "${name}" does not exist` }); 
     }
 
-    return c.json(city, 200);
+    return c.json({
+      success: true,
+      message: `City ${city.name}`,
+      data: city
+    }, 200);
   }
 }
