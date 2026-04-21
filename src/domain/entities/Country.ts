@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from "typeorm";
+import { Entity, PrimaryColumn, Column, OneToMany, type Relation } from "typeorm";
 import { City } from "./City";
 
 @Entity()
@@ -10,7 +10,7 @@ export class Country {
   name: string;
 
   @OneToMany(() => City, (city) => city.country)
-  cities?: City[];
+  cities?: Relation<City>[];
 
   constructor(code: string, name: string) {
     this.code = code;

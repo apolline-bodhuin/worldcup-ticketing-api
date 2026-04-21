@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, type Relation } from "typeorm";
 import { Team } from "./Team";
 import { Stadium } from "./Stadium";
 
@@ -7,11 +7,11 @@ export class Match {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => Team)
-  homeTeam!: Team;
+@ManyToOne(() => Team)
+  homeTeam!: Relation<Team>;
 
   @ManyToOne(() => Team)
-  awayTeam!: Team;
+  awayTeam!: Relation<Team>;
 
   @Column({ default: 0 })
   homeScore: number = 0;
@@ -20,7 +20,7 @@ export class Match {
   awayScore: number = 0;
 
   @ManyToOne(() => Stadium)
-  stadium!: Stadium;
+  stadium!: Relation<Stadium>;
 
   @Column()
   status: string;

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, type Relation } from "typeorm";
 import { Match } from "./Match";
 
 @Entity()
@@ -8,7 +8,7 @@ export class Ticket {
   id!: number;
 
   @ManyToOne(() => Match, { nullable: false })
-  match!: Match;
+  match!: Relation<Match>;
 
   @Column()
   seat: string;

@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne } from "typeorm";
+import { Entity, PrimaryColumn, Column, ManyToOne, type Relation } from "typeorm";
 import { City } from "./City";
 
 @Entity()
@@ -10,7 +10,7 @@ export class Stadium {
   capacity: number;
 
   @ManyToOne(() => City, { nullable: false })
-  city: City;
+  city: Relation<City>;
 
   constructor(name: string, capacity: number, city: City) {
     if (capacity <= 0) throw new Error("Capacity must be > 0");
