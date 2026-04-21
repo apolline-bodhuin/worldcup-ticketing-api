@@ -1,18 +1,43 @@
 import "reflect-metadata";
 import { AppDataSource } from "./AppDataSource";
-import { Country } from "@domain/entities/Country";
-import { City } from "@domain/entities/City";
 import { countries } from "../mock/countries";
 import { cities } from "../mock/cities";
+import { Ticket } from "@domain/entities/Ticket";
+import { Match } from "@domain/entities/Match";
+import { Stadium } from "@domain/entities/Stadium";
+import { Team } from "@domain/entities/Team";
+import { City } from "@domain/entities/City";
+import { Country } from "@domain/entities/Country";
 
 async function clear(): Promise<void> {
-  if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-  
-  await AppDataSource.getRepository(City).delete({});
-  await AppDataSource.getRepository(Country).delete({});
-  console.log("Database cleared");
-}
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
 
+    // 1. Instanciation de TOUS les repositories
+    const ticketRepository = AppDataSource.getRepository(Ticket);
+    const matchRepository = AppDataSource.getRepository(Match);
+    const stadiumRepository = AppDataSource.getRepository(Stadium);
+    const teamRepository = AppDataSource.getRepository(Team);
+    const cityRepository = AppDataSource.getRepository(City);
+    const countryRepository = AppDataSource.getRepository(Country);
+
+    // 2. Suppression dans l'ordre INVERSE des relations
+    await ticketRepository.createQueryBuilder().delete().execute();
+    await matchRepository.createQueryBuilder().delete().execute();
+    await stadiumRepository.createQueryBuilder().delete().execute();
+    await teamRepository.createQueryBuilder().delete().execute();
+    await cityRepository.createQueryBuilder().delete().execute();
+    await countryRepository.createQueryBuilder().delete().execute();
+
+    await AppDataSource.destroy();
+    console.log("Database cleared with success");
+  } catch (error) {
+    console.error(error);
+    console.error("Can't clear database");
+  }
+}
 async function seed(): Promise<void> {
   try {
     await clear();

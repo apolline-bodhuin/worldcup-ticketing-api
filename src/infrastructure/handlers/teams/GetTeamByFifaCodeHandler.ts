@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { AppDataSource } from "../../database/AppDataSource";
 import { Team } from "@domain/entities/Team";
 import { HTTPException } from "hono/http-exception";
-import { ... } from '../../../domain/value-objects/FifaCode'
+import { FifaCode } from "@domain/value-objets/FifaCode";
 
 export class GetTeamByFifaCodeHandler {
   async handle(c: Context) {
