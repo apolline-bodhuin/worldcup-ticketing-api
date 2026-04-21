@@ -14,6 +14,10 @@ export class GetCountriesHandler {
     }
 
     const countries = await query.getMany();
-    return c.json(countries, 200);
+    return c.json({
+      success: true,
+      message: "All countries",
+      data: countries
+    }, 200);
   }
 }

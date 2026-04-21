@@ -5,15 +5,23 @@ import { HTTPException } from "hono/http-exception";
 
 export class GetCountryByCodeHandler {
   async handle(c: Context) {
-    const code = c.req.param("code").toLowerCase(); 
+  const code = c.req.param("code");
 
-    const countryRepo = AppDataSource.getRepository(Country);
-    const country = await countryRepo.findOneBy({ code });
+  const country = await countryRepository.findOneBy({ code: code });
 
-    if (!country) {
-      throw new HTTPException(404, { message: "Pays introuvable" });
-    }
+  if (!country) {
+    return c.json({
+      success: false,
+      message: "Country not found"
+    }, 404);
+  }
+  return c.json({
+    success: true,
+    message: `Country ${country.name}`,
+    data: country
+    }, 200);
 
-    return c.json(country, 200);
   }
 }
+
+
