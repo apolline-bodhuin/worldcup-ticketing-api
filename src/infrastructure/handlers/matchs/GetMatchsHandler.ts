@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import { AppDataSource } from "../../database/AppDataSource";
 import { Match } from "@domain/entities/Match";
+import { HTTPException } from "hono/http-exception"; 
 
 export class GetMatchsHandler {
   async handle(c: Context) {
@@ -8,6 +9,13 @@ export class GetMatchsHandler {
     
     const dateQuery = c.req.query("date");
     const teamCode = c.req.query("team[code]");
+
+    if (dateQuery) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(dateQuery)) {
+        throw new HTTPException(400, { message: "Format de date invalide (YYYY-MM-DD attendu)" });
+      }
+    }
 
     let query = matchRepository.createQueryBuilder("match")
       .leftJoinAndSelect("match.homeTeam", "homeTeam")
