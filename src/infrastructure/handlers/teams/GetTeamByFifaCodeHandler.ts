@@ -2,25 +2,30 @@ import { Context } from "hono";
 import { AppDataSource } from "../../database/AppDataSource";
 import { Team } from "@domain/entities/Team";
 import { HTTPException } from "hono/http-exception";
-import { FifaCode } from "@domain/value-objets/FifaCode";
 
 export class GetTeamByFifaCodeHandler {
   async handle(c: Context) {
-    const code = c.req.param("fifaCode");
+    const fifaCode = c.req.param("fifaCode");
 
-    try {
-      new FifaCode(code.toUpperCase()); 
-    } catch (e) {
-      throw new HTTPException(400, { message: "Format du code FIFA invalide" });
+    if (fifaCode.length !== 3) {
+      throw new HTTPException(400, { message: `Invalid FIFA code: "${fifaCode}"` });
     }
 
+    const codeUpper = fifaCode.toUpperCase();
     const teamRepo = AppDataSource.getRepository(Team);
-    const team = await teamRepo.findOneBy({ code: code.toUpperCase() });
+
+    const team = await teamRepo.findOne({
+      where: { code: codeUpper as any }
+    });
 
     if (!team) {
-      throw new HTTPException(404, { message: "Équipe introuvable" }); 
+      throw new HTTPException(404, { message: `Team ${codeUpper} does not exist` });
     }
 
-    return c.json(team, 200);
+    return c.json({
+      success: true,
+      message: `Team ${codeUpper}`,
+      data: team
+    }, 200);
   }
 }

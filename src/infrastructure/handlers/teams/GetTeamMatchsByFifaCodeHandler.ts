@@ -6,24 +6,36 @@ import { HTTPException } from "hono/http-exception";
 
 export class GetTeamMatchsByFifaCodeHandler {
   async handle(c: Context) {
-    const fifaCode = c.req.param("fifaCode");
+    const fifaCode = c.req.param("fifaCode").toUpperCase();
+
+    if (fifaCode.length !== 3) {
+      throw new HTTPException(400, { message: `Invalid FIFA code: "${fifaCode}"` });
+    }
 
     const teamRepo = AppDataSource.getRepository(Team);
-    const team = await teamRepo.findOneBy({ code: fifaCode.toUpperCase() });
     
+    const team = await teamRepo.findOne({
+      where: { code: fifaCode as any }
+    });
+
     if (!team) {
-      throw new HTTPException(404, { message: "Équipe introuvable" });
+      throw new HTTPException(404, { message: `Team ${fifaCode} does not exist` });
     }
 
     const matchRepo = AppDataSource.getRepository(Match);
+
     const matchs = await matchRepo.find({
       where: [
-        { homeTeam: { code: fifaCode.toUpperCase() } },
-        { awayTeam: { code: fifaCode.toUpperCase() } }
+        { homeTeam: { code: fifaCode as any } },
+        { awayTeam: { code: fifaCode as any } }
       ],
-      relations: ["homeTeam", "awayTeam", "stadium"]
+      relations: ["homeTeam", "awayTeam", "stadium", "stadium.city", "stadium.city.country"]
     });
 
-    return c.json(matchs, 200);
+    return c.json({
+      success: true,
+      message: `Matchs for team ${fifaCode}`,
+      data: matchs
+    }, 200);
   }
 }
