@@ -10,13 +10,18 @@ export class GetStadiumByNameHandler {
     const stadiumRepo = AppDataSource.getRepository(Stadium);
     const stadium = await stadiumRepo.createQueryBuilder("stadium")
       .leftJoinAndSelect("stadium.city", "city")
+      .leftJoinAndSelect("city.country", "country") 
       .where("LOWER(stadium.name) = LOWER(:name)", { name }) 
       .getOne();
 
     if (!stadium) {
-      throw new HTTPException(404, { message: "Stade introuvable" });
+      throw new HTTPException(404, { message: `Stadium "${name}" does not exist` });
     }
 
-    return c.json(stadium, 200);
+    return c.json({
+      success: true,
+      message: `Stadium ${stadium.name}`,
+      data: stadium
+    }, 200);
   }
 }

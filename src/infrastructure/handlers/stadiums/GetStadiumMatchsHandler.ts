@@ -13,14 +13,20 @@ export class GetStadiumMatchsHandler {
       .where("LOWER(stadium.name) = LOWER(:name)", { name })
       .getOne();
 
-    if (!stadium) throw new HTTPException(404, { message: "Stade introuvable" });
+    if (!stadium) {
+      throw new HTTPException(404, { message: `Stadium "${name}" does not exist` });
+    }
 
     const matchRepo = AppDataSource.getRepository(Match);
     const matchs = await matchRepo.find({
       where: { stadium: { name: stadium.name } },
-      relations: ["homeTeam", "awayTeam", "stadium"]
+      relations: ["homeTeam", "awayTeam", "stadium", "stadium.city", "stadium.city.country"]
     });
 
-    return c.json(matchs, 200);
+    return c.json({
+      success: true,
+      message: `Matchs at ${stadium.name}`,
+      data: matchs
+    }, 200);
   }
 }

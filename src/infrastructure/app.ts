@@ -6,6 +6,7 @@ import { teamsRouter } from "./routes/teams";
 import { ticketsRouter } from "./routes/tickets";
 import { countriesRouter } from "./routes/countries";
 import { citiesRouter } from "./routes/cities";
+import { stadiumsRouter } from "./routes/stadiums"; 
 
 export const app = new Hono();
 
@@ -13,7 +14,6 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ success: false, error: err.message }, err.status);
   }
-  console.error(err);
   return c.json({ success: false, error: "Erreur interne" }, 500);
 });
 
@@ -23,3 +23,4 @@ app.route("/teams", teamsRouter);
 app.route("/tickets", ticketsRouter);
 app.route("/countries", countriesRouter);
 app.route("/cities", citiesRouter);
+app.route("/stadiums", stadiumsRouter);
