@@ -3,19 +3,20 @@ import { AppDataSource } from "../../database/AppDataSource";
 import { Match } from "@domain/entities/Match";
 import { Ticket } from "@domain/entities/Ticket";
 import { HTTPException } from "hono/http-exception";
+import { CreateTicketSchema } from "./CreateTicketSchema";
 
 export class CreateTicketHandler {
   async handle(c: Context) {
     try {
       const body = await c.req.json();
       
-      const matchId = parseInt(body.matchId);
-      const seat = body.seat;
-      const customer = body.customer;
-
-      if (isNaN(matchId) || !seat || !customer?.name || !customer?.email) {
+      const parsedResult = CreateTicketSchema.safeParse(body);
+      
+      if (!parsedResult.success) {
         throw new HTTPException(400, { message: "Can't create ticket (wrong or missing values)" });
       }
+
+      const { matchId, seat, customer } = parsedResult.data;
 
       const ticketRepo = AppDataSource.getRepository(Ticket);
       const matchRepo = AppDataSource.getRepository(Match);
@@ -33,13 +34,13 @@ export class CreateTicketHandler {
         throw new HTTPException(409, { message: `Seat '${seat}' is already taken for match ${matchId}` });
       }
 
-      const ticket = ticketRepo.create({
-        seat: seat,
-        price: Number(body.price) || 50,
-        customerName: customer.name,
-        customerEmail: customer.email,
-        match: match
-      });
+      const ticket = new Ticket(
+        seat,
+        customer.firstname,
+        customer.lastname,
+        customer.email,
+        match
+      );
 
       const savedTicket = await ticketRepo.save(ticket);
 
@@ -47,19 +48,22 @@ export class CreateTicketHandler {
         success: true,
         message: "Ticket created",
         data: {
-          id: savedTicket.id,
+          matchId: match.id,
           seat: savedTicket.seat,
-          price: savedTicket.price,
-          customer: {
-            name: savedTicket.customerName,
+          holder: {
+            firstName: savedTicket.customerFirstname,
+            lastName: savedTicket.customerLastname,
             email: savedTicket.customerEmail
-          },
-          match: { id: match.id }
+          }
         }
       }, 201);
 
     } catch (error: any) {
       if (error instanceof HTTPException) throw error;
+      
+      if (error instanceof Error && (error.message.includes("vide") || error.message.includes("positif"))) {
+        throw new HTTPException(400, { message: error.message });
+      }
       
       console.error("🚨 SQL Error:", error.message);
       throw new HTTPException(500, { message: "Erreur interne" });
