@@ -1,8 +1,10 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Country } from "@domain/entities/Country";
-import { Team } from "@domain/entities/Team";
+
 import { City } from "@domain/entities/City";
+import { Country } from "@domain/entities/Country";
+
+import { Team } from "@domain/entities/Team";
 import { Stadium } from "@domain/entities/Stadium";
 import { Match } from "@domain/entities/Match";
 import { Ticket } from "@domain/entities/Ticket";
@@ -16,5 +18,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true,
   logging: false,
-  entities: [Country, Team, City, Stadium, Match, Ticket],
+  entities: [City, Country, Team, Stadium, Match, Ticket], 
 });

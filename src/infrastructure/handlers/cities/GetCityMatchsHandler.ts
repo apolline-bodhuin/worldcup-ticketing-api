@@ -19,7 +19,7 @@ export class GetCityMatchsHandler {
 
     const matchRepo = AppDataSource.getRepository(Match);
     const matchs = await matchRepo.find({
-      where: { stadium: { city: { id: city.id } } },
+      where: { stadium: { city: { name: city.name } } },
       relations: ["homeTeam", "awayTeam", "stadium", "stadium.city", "stadium.city.country"]
     });
 
