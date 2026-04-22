@@ -1,35 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Unique, type Relation } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { Match } from "./Match";
 
 @Entity()
-@Unique(["match", "seat"])
 export class Ticket {
   @PrimaryGeneratedColumn()
-  id!: number;
-
-  @ManyToOne(() => Match, { nullable: false })
-  match!: Relation<Match>;
+  id: number;
 
   @Column()
   seat: string;
 
-  @Column()
-  firstname: string;
+  @Column({ type: "float" })
+  price: number;
 
   @Column()
-  lastname: string;
+  customerName: string;
 
   @Column()
-  email: string;
+  customerEmail: string;
 
-  constructor(match: Relation<Match>, seat: string, firstname: string, lastname: string, email: string) {
-    // Si seat est non-défini (appel par TypeORM), on ne fait pas la validation
-    if (seat !== undefined && !seat) throw new Error("Seat cannot be empty");
-    
-    this.match = match;
-    this.seat = seat;
-    this.firstname = firstname;
-    this.lastname = lastname;
-    this.email = email;
-  }
+  @ManyToOne(() => Match)
+  match: Match;
 }

@@ -13,20 +13,19 @@ import { City } from "@domain/entities/City";
 import { Country } from "@domain/entities/Country";
 
 async function clear(): Promise<void> {
-  try {
-    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-
-    console.log("Cleaning database...");
-    await AppDataSource.getRepository(Ticket).createQueryBuilder().delete().where("1=1").execute();
-    await AppDataSource.getRepository(Match).createQueryBuilder().delete().where("1=1").execute();
-    await AppDataSource.getRepository(Stadium).createQueryBuilder().delete().where("1=1").execute();
-    await AppDataSource.getRepository(Team).createQueryBuilder().delete().where("1=1").execute();
-    await AppDataSource.getRepository(City).createQueryBuilder().delete().where("1=1").execute();
-    await AppDataSource.getRepository(Country).createQueryBuilder().delete().where("1=1").execute();
-  } catch (error) {
-    console.error("Can't clear database:", error);
-    throw error;
-  }
+  const ds = AppDataSource;
+  if (!ds.isInitialized) await ds.initialize();
+  
+  console.log("Purge de la base...");
+  // On désactive les clés étrangères pour tout vider sans erreur
+  await ds.query("SET FOREIGN_KEY_CHECKS = 0;");
+  await ds.query("TRUNCATE TABLE ticket;");
+  await ds.query("TRUNCATE TABLE `match`;"); // match est un mot réservé, on met des backticks
+  await ds.query("TRUNCATE TABLE stadium;");
+  await ds.query("TRUNCATE TABLE team;");
+  await ds.query("TRUNCATE TABLE city;");
+  await ds.query("TRUNCATE TABLE country;");
+  await ds.query("SET FOREIGN_KEY_CHECKS = 1;");
 }
 
 async function seed(): Promise<void> {

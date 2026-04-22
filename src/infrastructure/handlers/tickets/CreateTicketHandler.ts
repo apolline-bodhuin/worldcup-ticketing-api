@@ -1,57 +1,64 @@
 import { Context } from "hono";
-import { HTTPException } from "hono/http-exception";
 import { AppDataSource } from "../../database/AppDataSource";
-import { Ticket } from "@domain/entities/Ticket";
 import { Match } from "@domain/entities/Match";
-import { CreateTicketSchema } from "./CreateTicketSchema";
+import { Ticket } from "@domain/entities/Ticket";
+import { HTTPException } from "hono/http-exception";
 
 export class CreateTicketHandler {
   async handle(c: Context) {
-    const body = await c.req.json();
+    try {
+      const body = await c.req.json();
+      
+      const matchId = Number(body.matchId);
+      const seat = String(body.seat);
+      const price = Number(body.price) || 50;
+      const customerName = body.customer?.name || "Unknown";
+      const customerEmail = body.customer?.email || "no-email@test.com";
 
-    const result = CreateTicketSchema.safeParse(body);
-    if (!result.success) {
-      throw new HTTPException(400, { message: "Can't create ticket (wrong or missing values)" });
-    }
+      const ticketRepo = AppDataSource.getRepository(Ticket);
 
-    const { matchId, seat, customer } = result.data;
+      const match = await AppDataSource.getRepository(Match).findOneBy({ id: matchId });
+      if (!match) throw new HTTPException(404, { message: `Match ${matchId} does not exist` });
 
-    const matchRepo = AppDataSource.getRepository(Match);
-    const ticketRepo = AppDataSource.getRepository(Ticket);
+      const existing = await ticketRepo.findOne({
+        where: { match: { id: matchId }, seat: seat }
+      });
 
-    const match = await matchRepo.findOneBy({ id: matchId });
-    if (!match) {
-      throw new HTTPException(404, { message: `Match ${matchId} does not exist` });
-    }
-
-    const existingTicket = await ticketRepo.findOneBy({ match: { id: matchId }, seat });
-    if (existingTicket) {
-      throw new HTTPException(409, { message: `Seat '${seat}' is already taken for match ${matchId}` });
-    }
-
-    const newTicket = ticketRepo.create({
-      match,
-      seat,
-      firstname: customer.firstname,
-      lastname: customer.lastname,
-      email: customer.email,
-    });
-
-    const savedTicket = await ticketRepo.save(newTicket);
-
-    return c.json({
-      success: true,
-      message: "Ticket created",
-      data: {
-        id: savedTicket.id,
-        seat: savedTicket.seat,
-        customer: {
-          email: savedTicket.email 
-        },
-        match: {
-          id: savedTicket.match.id
-        }
+      if (existing) {
+        throw new HTTPException(409, { message: `Seat '${seat}' is already taken for match ${matchId}` });
       }
-    }, 201);
+
+      const ticket = ticketRepo.create({
+        seat,
+        price,
+        customerName,
+        customerEmail,
+        match
+      });
+
+      const savedTicket = await ticketRepo.save(ticket);
+
+      return c.json({
+        success: true,
+        message: "Ticket created",
+        data: {
+          id: savedTicket.id,
+          seat: savedTicket.seat,
+          price: savedTicket.price,
+          customer: {
+            name: savedTicket.customerName,
+            email: savedTicket.customerEmail
+          },
+          match: { id: match.id }
+        }
+      }, 201);
+
+    } catch (error: any) {
+      if (error instanceof HTTPException) throw error;
+      
+      console.error("❌ ERREUR SQL :", error.message);
+      
+      throw new HTTPException(500, { message: error.message || "Erreur interne" });
+    }
   }
 }
