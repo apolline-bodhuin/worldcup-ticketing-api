@@ -5,28 +5,33 @@ import { Country } from "@domain/entities/Country";
 
 export class GetCountryCitiesHandler {
   async handle(c: Context) {
-    const code = c.req.param("code").toLowerCase();
+    try {
+      const code = c.req.param("code").toLowerCase();
 
-    const countryRepo = AppDataSource.getRepository(Country);
-    const country = await countryRepo.findOneBy({ code });
-    
-    if (!country) {
+      const countryRepo = AppDataSource.getRepository(Country);
+      const country = await countryRepo.findOneBy({ code });
+      
+      if (!country) {
+        return c.json({
+          success: false,
+          error: `Country "${code}" does not exist`
+        }, 404);
+      }
+
+      const cityRepo = AppDataSource.getRepository(City);
+      const cities = await cityRepo.find({ 
+        where: { country: { code } },
+        relations: ["country"] 
+      });
+
       return c.json({
-        success: false,
-        error: `Country "${code}" does not exist`
-      }, 404);
+        success: true,
+        message: `Cities in ${country.name}`,
+        data: cities
+      }, 200);
+
+    } catch (error) {
+      return c.json({ success: false, error: "Internal Server Error" }, 500);
     }
-
-    const cityRepo = AppDataSource.getRepository(City);
-    const cities = await cityRepo.find({ 
-      where: { country: { code } },
-      relations: ["country"] 
-    });
-
-    return c.json({
-      success: true,
-      message: `Cities in ${country.name}`,
-      data: cities
-    }, 200);
   }
 }

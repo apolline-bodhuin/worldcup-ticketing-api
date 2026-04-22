@@ -46,7 +46,7 @@ export class CreateTicketHandler {
         id: savedTicket.id,
         seat: savedTicket.seat,
         customer: {
-          email: savedTicket.email
+          email: savedTicket.email 
         },
         match: {
           id: savedTicket.match.id

@@ -13,6 +13,7 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ success: false, error: err.message }, err.status);
   }
+  console.error(err);
   return c.json({ success: false, error: "Erreur interne" }, 500);
 });
 

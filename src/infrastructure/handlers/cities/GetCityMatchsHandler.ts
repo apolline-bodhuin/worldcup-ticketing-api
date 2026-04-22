@@ -14,15 +14,19 @@ export class GetCityMatchsHandler {
       .getOne();
 
     if (!city) {
-      throw new HTTPException(404, { message: "Ville introuvable" }); 
+      throw new HTTPException(404, { message: `City "${name}" does not exist` }); 
     }
 
     const matchRepo = AppDataSource.getRepository(Match);
     const matchs = await matchRepo.find({
-      where: { stadium: { city: { name: city.name } } },
-      relations: ["homeTeam", "awayTeam", "stadium", "stadium.city"]
+      where: { stadium: { city: { id: city.id } } },
+      relations: ["homeTeam", "awayTeam", "stadium", "stadium.city", "stadium.city.country"]
     });
 
-    return c.json(matchs, 200);
+    return c.json({
+      success: true,
+      message: `Matchs in ${city.name}`,
+      data: matchs
+    }, 200);
   }
 }
