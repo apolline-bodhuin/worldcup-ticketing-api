@@ -13,26 +13,23 @@ export class GetMatchsHandler {
       .leftJoinAndSelect("match.homeTeam", "homeTeam")
       .leftJoinAndSelect("match.awayTeam", "awayTeam")
       .leftJoinAndSelect("match.stadium", "stadium")
-      .leftJoinAndSelect("stadium.city", "city")
-      .leftJoinAndSelect("city.country", "country");
-
-    let message = "All matchs";
+      .leftJoinAndSelect("stadium.city", "city") 
+      .leftJoinAndSelect("city.country", "country"); 
 
     if (dateQuery) {
       query = query.andWhere("DATE(match.date) = :date", { date: dateQuery });
-      message = `Matchs filtered by date: ${dateQuery}`;
     }
 
     if (teamCode) {
       query = query.andWhere("(homeTeam.code = :code OR awayTeam.code = :code)", { code: teamCode });
-      message = `Matchs filtered by team[code]: ${teamCode}`;
     }
 
     const matchs = await query.getMany();
 
     return c.json({
       success: true,
-      message: message,
+      message: dateQuery ? `Matchs filtered by date: ${dateQuery}` : 
+               teamCode ? `Matchs filtered by team[code]: ${teamCode}` : "All matchs",
       data: matchs
     }, 200);
   }

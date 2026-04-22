@@ -2,6 +2,9 @@ import "reflect-metadata";
 import { AppDataSource } from "./AppDataSource";
 import { countries } from "../mock/countries";
 import { cities } from "../mock/cities";
+import { teams } from "../mock/teams";
+import { stadiums } from "../mock/stadiums";
+import { matchs } from "../mock/matchs";
 import { Ticket } from "@domain/entities/Ticket";
 import { Match } from "@domain/entities/Match";
 import { Stadium } from "@domain/entities/Stadium";
@@ -11,55 +14,48 @@ import { Country } from "@domain/entities/Country";
 
 async function clear(): Promise<void> {
   try {
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
-    // 1. Instanciation de TOUS les repositories
-    const ticketRepository = AppDataSource.getRepository(Ticket);
-    const matchRepository = AppDataSource.getRepository(Match);
-    const stadiumRepository = AppDataSource.getRepository(Stadium);
-    const teamRepository = AppDataSource.getRepository(Team);
-    const cityRepository = AppDataSource.getRepository(City);
-    const countryRepository = AppDataSource.getRepository(Country);
-
-    // 2. Suppression dans l'ordre INVERSE des relations
-    await ticketRepository.createQueryBuilder().delete().execute();
-    await matchRepository.createQueryBuilder().delete().execute();
-    await stadiumRepository.createQueryBuilder().delete().execute();
-    await teamRepository.createQueryBuilder().delete().execute();
-    await cityRepository.createQueryBuilder().delete().execute();
-    await countryRepository.createQueryBuilder().delete().execute();
-
-    await AppDataSource.destroy();
-    console.log("Database cleared with success");
+    console.log("Cleaning database...");
+    await AppDataSource.getRepository(Ticket).createQueryBuilder().delete().where("1=1").execute();
+    await AppDataSource.getRepository(Match).createQueryBuilder().delete().where("1=1").execute();
+    await AppDataSource.getRepository(Stadium).createQueryBuilder().delete().where("1=1").execute();
+    await AppDataSource.getRepository(Team).createQueryBuilder().delete().where("1=1").execute();
+    await AppDataSource.getRepository(City).createQueryBuilder().delete().where("1=1").execute();
+    await AppDataSource.getRepository(Country).createQueryBuilder().delete().where("1=1").execute();
   } catch (error) {
-    console.error(error);
-    console.error("Can't clear database");
+    console.error("Can't clear database:", error);
+    throw error;
   }
 }
+
 async function seed(): Promise<void> {
   try {
     await clear();
     if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
-    const countryRepo = AppDataSource.getRepository(Country);
-    const cityRepo = AppDataSource.getRepository(City);
+    console.log("Inserting data...");
 
-    for (const c of countries) {
-      await countryRepo.save(countryRepo.create({ code: c.code, name: c.name }));
-    }
+    await AppDataSource.getRepository(Country).save(countries);
     console.log("Countries inserted");
 
-    for (const c of cities) {
-      await cityRepo.save(cityRepo.create({ name: c.name, country: { code: c.country.code } }));
-    }
+    await AppDataSource.getRepository(City).save(cities);
     console.log("Cities inserted");
 
+    await AppDataSource.getRepository(Team).save(teams);
+    console.log("Teams inserted");
+
+    await AppDataSource.getRepository(Stadium).save(stadiums);
+    console.log("Stadiums inserted");
+
+    await AppDataSource.getRepository(Match).save(matchs);
+    console.log("Matchs inserted");
+
     await AppDataSource.destroy();
-    console.log("Database seeded with success");
+    console.log("Database seeded with success!");
   } catch (error) {
     console.error("Error during seeding:", error);
+    process.exit(1);
   }
 }
 

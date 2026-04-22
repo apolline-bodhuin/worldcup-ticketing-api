@@ -15,7 +15,7 @@ export class GetMatchsByStageHandler {
 
     return c.json({
       success: true,
-      message: `Matchs in stage: ${stage}`,
+      message: `Matchs at stage ${stage}`,
       data: matchs
     }, 200);
   }
