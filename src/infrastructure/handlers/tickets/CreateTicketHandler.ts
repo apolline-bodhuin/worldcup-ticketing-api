@@ -9,16 +9,21 @@ export class CreateTicketHandler {
     try {
       const body = await c.req.json();
       
-      const matchId = Number(body.matchId);
-      const seat = String(body.seat);
-      const price = Number(body.price) || 50;
-      const customerName = body.customer?.name || "Unknown";
-      const customerEmail = body.customer?.email || "no-email@test.com";
+      const matchId = parseInt(body.matchId);
+      const seat = body.seat;
+      const customer = body.customer;
+
+      if (isNaN(matchId) || !seat || !customer?.name || !customer?.email) {
+        throw new HTTPException(400, { message: "Can't create ticket (wrong or missing values)" });
+      }
 
       const ticketRepo = AppDataSource.getRepository(Ticket);
+      const matchRepo = AppDataSource.getRepository(Match);
 
-      const match = await AppDataSource.getRepository(Match).findOneBy({ id: matchId });
-      if (!match) throw new HTTPException(404, { message: `Match ${matchId} does not exist` });
+      const match = await matchRepo.findOneBy({ id: matchId });
+      if (!match) {
+        throw new HTTPException(404, { message: `Match ${matchId} does not exist` });
+      }
 
       const existing = await ticketRepo.findOne({
         where: { match: { id: matchId }, seat: seat }
@@ -29,11 +34,11 @@ export class CreateTicketHandler {
       }
 
       const ticket = ticketRepo.create({
-        seat,
-        price,
-        customerName,
-        customerEmail,
-        match
+        seat: seat,
+        price: Number(body.price) || 50,
+        customerName: customer.name,
+        customerEmail: customer.email,
+        match: match
       });
 
       const savedTicket = await ticketRepo.save(ticket);
@@ -56,9 +61,8 @@ export class CreateTicketHandler {
     } catch (error: any) {
       if (error instanceof HTTPException) throw error;
       
-      console.error("❌ ERREUR SQL :", error.message);
-      
-      throw new HTTPException(500, { message: error.message || "Erreur interne" });
+      console.error("🚨 SQL Error:", error.message);
+      throw new HTTPException(500, { message: "Erreur interne" });
     }
   }
 }
